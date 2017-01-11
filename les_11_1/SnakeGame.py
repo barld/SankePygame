@@ -78,11 +78,24 @@ class Game:
             self.snake = self.snake.take(self.length)
 
             self.cooldown = self.speed
-
+            
+            if self.isdead(self.snake):
+                print("you ded")
+                exit()
+            
             if self.snake.pos.is_same(self.food):
                 self.length += 1
                 snake = Snake(self.food, self.snake)
                 self.setfood()
+    
+    def isdead(self, snake):
+        headpos = snake.pos
+        snake = snake.tail
+        while snake != None:
+            if snake.pos.is_same(headpos):
+                return True
+            snake = snake.tail
+        return False
 
     def setfood(self):
         self.food = Vector2(random.randint(0,self.rows-1), random.randint(0,self.colloms-1))
