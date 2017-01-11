@@ -34,8 +34,10 @@ class Snake:
     def skip(self, n):
         if n == 0:
             return self
-        else:
-            return self.skip(n-1).tail
+        elif self.tail is None:
+            return None
+        else
+            return self.tail.skip(n-1)
 
     def exist(self, p):
         if p(self.pos):
