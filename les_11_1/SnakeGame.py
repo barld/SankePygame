@@ -25,6 +25,27 @@ class Snake:
         pygame.draw.rect(screen, (0, 255, 0), [self.pos.x * cSize, self.pos.y * rSize, cSize - 2, rSize - 2])
         if self.tail is not None:
             self.tail.draw(screen,cSize,rSize)
+    def length(self):
+        if self.tail is None:
+            return 1
+        else:
+            return 1 + self.tail.length()
+
+    def skip(self, n):
+        if n == 0:
+            return self
+        elif self.tail is None:
+            return None
+        else
+            return self.tail.skip(n-1)
+
+    def exist(self, p):
+        if p(self.pos):
+            return True
+        elif self.tail is None:
+            return False
+        else:
+            return self.tail.exist(p)
 
 class Game:
     def __init__(self, colloms, rows, width, height):
@@ -78,7 +99,11 @@ class Game:
             self.snake = self.snake.take(self.length)
 
             self.cooldown = self.speed
-
+            
+            if self.isdead(self.snake):
+                print("you died")
+                exit()
+            
             if self.snake.pos.is_same(self.food):
                 self.length += 1
                 snake = Snake(self.food, self.snake)
@@ -86,3 +111,8 @@ class Game:
 
     def setfood(self):
         self.food = Vector2(random.randint(0,self.rows-1), random.randint(0,self.colloms-1))
+    
+    def isdead(self, snake):
+        if snake.length() > 1:
+            return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
+        return False
