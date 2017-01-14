@@ -100,6 +100,7 @@ class Game:
 
             self.cooldown = self.speed
             
+            self.teleport(self.snake)
             if self.isdead(self.snake):
                 print("you died")
                 exit()
@@ -116,3 +117,13 @@ class Game:
         if snake.length() > 1:
             return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
         return False
+    
+    def teleport(self, snake):
+            if snake.pos.x == self.colloms:
+                snake.pos.x = 0
+            if snake.pos.x == -1:
+                snake.pos.x = self.colloms -1
+            if snake.pos.y == self.rows:
+                snake.pos.y = 0
+            if snake.pos.y == -1:
+                snake.pos.y = self.rows -1
