@@ -36,7 +36,7 @@ class Snake:
             return self
         elif self.tail is None:
             return None
-        else
+        else:
             return self.tail.skip(n-1)
 
     def exist(self, p):
