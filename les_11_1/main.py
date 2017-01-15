@@ -12,8 +12,12 @@ white = 255,255,255
 basicfont = pygame.font.Font('freesansbold.ttf', 18)
 displaysurf = pygame.display.set_mode((width, height))
 screen = pygame.display.set_mode(size)
-
-game = Game(colloms,rows,width,height)
+hard = input("hard mode? type y/n").lower()
+if hard == "y":
+    hard = True
+else:
+    hard = False
+game = Game(colloms,rows,width,height,hard)
 
 
 def drawScore(score):
@@ -33,7 +37,7 @@ while True:
     game.update(events, dt)
 
     if game.reset:
-        game = Game(colloms,rows,width,height)
+        game = Game(colloms,rows,width,height,hard)
 
     screen.fill(black)
 
