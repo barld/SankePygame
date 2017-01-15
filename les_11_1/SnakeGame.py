@@ -52,13 +52,14 @@ class Snake:
 
 class Game:
     def __init__(self, colloms, rows, width, height):
-        self.snake = Snake(Vector2(10, 10))
+        self.snake = Snake(Vector2(colloms//2, rows//2))
         self.colloms = colloms
-        self.rows = rows
+        self.rows = rows + 2
         self.setfood()
         self.width = width
         self.height = height
-        self.speed = 0.2
+        self.reset = False
+        self.speed = 0.05
         self.score = 0
         self.cooldown = self.speed
 
@@ -66,9 +67,11 @@ class Game:
         self.length = 1
 
     def draw(self, screen):
-        cSize = self.width // self.colloms
-        rSize = self.height // self.rows
-
+        cSize = self.width / self.colloms
+        rSize = self.height / self.rows
+        for collom in range(0,self.colloms):
+            for row in range(2):
+                pygame.draw.rect(screen, (255,0,0), [collom * cSize, row * rSize, cSize, rSize])
         self.snake.draw(screen, cSize, rSize)
         pygame.draw.rect(screen, (0, 0, 255), [self.food.x * cSize, self.food.y * rSize, cSize - 2, rSize - 2])
 
@@ -87,23 +90,21 @@ class Game:
             self.direction = pygame.K_LEFT
 
         if self.cooldown < 0.0:
-
             if self.direction == pygame.K_UP:
                 newpos = Vector2(self.snake.pos.x, self.snake.pos.y - 1)
             elif self.direction == pygame.K_RIGHT:
                 newpos = Vector2(self.snake.pos.x + 1, self.snake.pos.y)
             elif self.direction == pygame.K_DOWN:
                 newpos = Vector2(self.snake.pos.x, self.snake.pos.y + 1)
-            else:
+            elif self.direction == pygame.K_LEFT:
                 newpos = Vector2(self.snake.pos.x - 1, self.snake.pos.y)
+
             self.snake = Snake(newpos, self.snake)
+            if self.isdead(self.snake):
+                self.reset = True
             self.snake = self.snake.take(self.length)
             self.teleport(self.snake)
             self.cooldown = self.speed
-
-            if self.isdead(self.snake):
-                print("you died")
-                exit()
 
             if self.snake.pos.is_same(self.food):
                 self.length += 1
@@ -112,10 +113,11 @@ class Game:
                 self.setfood()
 
     def setfood(self):
-        self.food = Vector2(random.randint(0, self.rows - 1), random.randint(0, self.colloms - 1))
+        self.food = Vector2(random.randint(0, self.rows - 1), random.randint(2, self.colloms - 1))
 
     def isdead(self, snake):
-        # return (snake.pos.x == -1 or snake.pos.x == self.colloms) or (snake.pos.y == -1 or snake.pos.y == self.rows)
+        if(snake.pos.x < 0 or snake.pos.x > self.colloms-1) or (snake.pos.y < 2 or snake.pos.y > self.rows -1):
+            return True
         if snake.length() > 1:
             return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
         return False
@@ -126,7 +128,7 @@ class Game:
             if snake.pos.x == -1:
                 snake.pos.x = self.colloms -1
             if snake.pos.y == self.rows:
-                snake.pos.y = 0
-            if snake.pos.y == -1:
+                snake.pos.y = 2
+            if snake.pos.y == 1:
                 snake.pos.y = self.rows -1
 
