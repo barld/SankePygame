@@ -1,9 +1,10 @@
 import pygame
 import sys
-from SnakeGame import Game
+from SnakeGameBarld import Game
 pygame.init()
 
 size = width, height = 500, 500
+grid = colloms, rows = 20, 20
 clock = pygame.time.Clock()
 yellow = 255,255,0
 black = 0, 0, 0
@@ -12,7 +13,7 @@ basicfont = pygame.font.Font('freesansbold.ttf', 18)
 displaysurf = pygame.display.set_mode((width, height))
 screen = pygame.display.set_mode(size)
 
-game = Game(20, 20, width, height)
+game = Game(colloms,rows,width,height)
 
 
 def drawScore(score):
@@ -30,6 +31,9 @@ while True:
     dt = clock.tick(60)/1000
 
     game.update(events, dt)
+
+    if game.reset:
+        game = Game(colloms,rows,width,height)
 
     screen.fill(black)
 
