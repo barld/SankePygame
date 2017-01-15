@@ -51,13 +51,14 @@ class Snake:
 
 
 class Game:
-    def __init__(self, colloms, rows, width, height):
+    def __init__(self, colloms, rows, width, height, difficulty):
         self.snake = Snake(Vector2(colloms//2, rows//2))
         self.colloms = colloms + 4
         self.rows = rows + 4
         self.setfood()
         self.width = width
         self.height = height
+        self.hard = difficulty
         self.reset = False
         self.speed = 0.05
         self.score = 0
@@ -120,8 +121,8 @@ class Game:
         self.food = Vector2(random.randint(2, self.colloms - 3), random.randint(2, self.rows - 3))
 
     def isdead(self, snake):
-        if(snake.pos.x < 2 or snake.pos.x > self.colloms-3) or (snake.pos.y < 2 or snake.pos.y > self.rows -3):
-            return True
+        if self.hard:
+            return (snake.pos.x < 2 or snake.pos.x > self.colloms-3) or (snake.pos.y < 2 or snake.pos.y > self.rows -3)
         if snake.length() > 1:
             return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
         return False
