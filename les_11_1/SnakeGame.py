@@ -122,10 +122,13 @@ class Game:
 
     def isdead(self, snake):
         if self.hard:
+            if snake.length() > 1:
+                return snake.skip(1).exist(lambda x: x.is_same(snake.pos)) or (snake.pos.x < 2 or snake.pos.x > self.colloms-3) or (snake.pos.y < 2 or snake.pos.y > self.rows -3)
             return (snake.pos.x < 2 or snake.pos.x > self.colloms-3) or (snake.pos.y < 2 or snake.pos.y > self.rows -3)
-        if snake.length() > 1:
-            return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
-        return False
+        else:
+            if snake.length() > 1:
+                return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
+            return False
 
     def teleport(self, snake):
             if snake.pos.x == self.colloms -2:
