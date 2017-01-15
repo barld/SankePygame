@@ -1,44 +1,137 @@
 import pygame
-import sys
-from SnakeGameBarld import Game
-pygame.init()
-
-size = width, height = 500, 500
-grid = colloms, rows = 20, 20
-clock = pygame.time.Clock()
-yellow = 255,255,0
-black = 0, 0, 0
-white = 255,255,255
-basicfont = pygame.font.Font('freesansbold.ttf', 18)
-displaysurf = pygame.display.set_mode((width, height))
-screen = pygame.display.set_mode(size)
-
-game = Game(colloms,rows,width,height)
+import random
 
 
-def drawScore(score):
-    scoreSurf = basicfont.render('Score: %s' % (score), True, white)
-    scoreRect = scoreSurf.get_rect()
-    scoreRect.topleft = (width - 120, 10)
-    displaysurf.blit(scoreSurf, scoreRect)
+class Vector2:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-while True:
-    events = pygame.event.get()
+    def is_same(self, v2):
+        return self.x == v2.x and self.y == v2.y
 
-    for event in events:
-        if event.type == pygame.QUIT: sys.exit()
 
-    dt = clock.tick(60)/1000
+class Snake:
+    def __init__(self, pos: Vector2, tail=None):
+        self.pos = pos
+        self.tail = tail
 
-    game.update(events, dt)
+    def take(self, n):
+        if n == 0:
+            return None
+        else:
+            return Snake(self.pos, self.tail.take(n - 1) if self.tail is not None else None)
 
-    if game.reset:
-        game = Game(colloms,rows,width,height)
+    def draw(self, screen, cSize, rSize):
+        pygame.draw.rect(screen, (0, 255, 0), [self.pos.x * cSize, self.pos.y * rSize, cSize - 2, rSize - 2])
+        if self.tail is not None:
+            self.tail.draw(screen, cSize, rSize)
 
-    screen.fill(black)
+    def length(self):
+        if self.tail is None:
+            return 1
+        else:
+            return 1 + self.tail.length()
 
-    game.draw(screen)
+    def skip(self, n):
+        if n == 0:
+            return self
+        elif self.tail is None:
+            return None
+        else:
+            return self.tail.skip(n - 1)
 
-    drawScore(game.score)
+    def exist(self, p):
+        if p(self.pos):
+            return True
+        elif self.tail is None:
+            return False
+        else:
+            return self.tail.exist(p)
 
-    pygame.display.flip()
+
+class Game:
+    def __init__(self, colloms, rows, width, height):
+        self.snake = Snake(Vector2(colloms//2, rows//2))
+        self.colloms = colloms + 4
+        self.rows = rows + 4
+        self.setfood()
+        self.width = width
+        self.height = height
+        self.reset = False
+        self.speed = 0.05
+        self.score = 0
+        self.cooldown = self.speed
+
+        self.direction = pygame.K_UP
+        self.length = 1
+
+    def draw(self, screen):
+        cSize = (self.width) // self.colloms
+        rSize = (self.height) // self.rows
+        for collom in range(0,self.colloms):
+            for row in range(0, self.rows):
+                if collom < 2 or collom > self.colloms - 3:
+                    pygame.draw.rect(screen, (0,0,255), [collom * cSize, row * rSize, cSize, rSize])
+                elif row < 2 or row > self.rows - 3:
+                    pygame.draw.rect(screen, (0, 0, 255), [collom * cSize, row * rSize, cSize, rSize])
+
+        self.snake.draw(screen, cSize, rSize)
+        pygame.draw.rect(screen, (255, 0, 0), [self.food.x * cSize, self.food.y * rSize, cSize - 2, rSize - 2])
+
+    def update(self, events, dt):
+        self.cooldown = self.cooldown - dt
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_UP]:
+            self.direction = pygame.K_UP
+        elif keys[pygame.K_RIGHT]:
+            self.direction = pygame.K_RIGHT
+        elif keys[pygame.K_DOWN]:
+            self.direction = pygame.K_DOWN
+        elif keys[pygame.K_LEFT]:
+            self.direction = pygame.K_LEFT
+
+        if self.cooldown < 0.0:
+            if self.direction == pygame.K_UP:
+                newpos = Vector2(self.snake.pos.x, self.snake.pos.y - 1)
+            elif self.direction == pygame.K_RIGHT:
+                newpos = Vector2(self.snake.pos.x + 1, self.snake.pos.y)
+            elif self.direction == pygame.K_DOWN:
+                newpos = Vector2(self.snake.pos.x, self.snake.pos.y + 1)
+            elif self.direction == pygame.K_LEFT:
+                newpos = Vector2(self.snake.pos.x - 1, self.snake.pos.y)
+
+            self.snake = Snake(newpos, self.snake)
+            if self.isdead(self.snake):
+                self.reset = True
+            self.snake = self.snake.take(self.length)
+            self.teleport(self.snake)
+            self.cooldown = self.speed
+
+            if self.snake.pos.is_same(self.food):
+                self.length += 1
+                self.score += 1
+                snake = Snake(self.food, self.snake)
+                self.setfood()
+
+    def setfood(self):
+        self.food = Vector2(random.randint(2, self.colloms - 3), random.randint(2, self.rows - 3))
+
+    def isdead(self, snake):
+        if(snake.pos.x < 2 or snake.pos.x > self.colloms-3) or (snake.pos.y < 2 or snake.pos.y > self.rows -3):
+            return True
+        if snake.length() > 1:
+            return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
+        return False
+
+    def teleport(self, snake):
+            if snake.pos.x == self.colloms -2:
+                snake.pos.x = 2
+            if snake.pos.x == 1:
+                snake.pos.x = self.colloms -3
+            if snake.pos.y == self.rows -2:
+                snake.pos.y = 2
+            if snake.pos.y == 1:
+                snake.pos.y = self.rows -3
