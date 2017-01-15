@@ -53,8 +53,8 @@ class Snake:
 class Game:
     def __init__(self, colloms, rows, width, height):
         self.snake = Snake(Vector2(colloms//2, rows//2))
-        self.colloms = colloms
-        self.rows = rows + 2
+        self.colloms = colloms + 4
+        self.rows = rows + 4
         self.setfood()
         self.width = width
         self.height = height
@@ -67,13 +67,17 @@ class Game:
         self.length = 1
 
     def draw(self, screen):
-        cSize = self.width / self.colloms
-        rSize = self.height / self.rows
+        cSize = (self.width) // self.colloms
+        rSize = (self.height) // self.rows
         for collom in range(0,self.colloms):
-            for row in range(2):
-                pygame.draw.rect(screen, (255,0,0), [collom * cSize, row * rSize, cSize, rSize])
+            for row in range(0, self.rows):
+                if collom < 2 or collom > self.colloms - 3:
+                    pygame.draw.rect(screen, (0,0,255), [collom * cSize, row * rSize, cSize, rSize])
+                elif row < 2 or row > self.rows - 3:
+                    pygame.draw.rect(screen, (0, 0, 255), [collom * cSize, row * rSize, cSize, rSize])
+
         self.snake.draw(screen, cSize, rSize)
-        pygame.draw.rect(screen, (0, 0, 255), [self.food.x * cSize, self.food.y * rSize, cSize - 2, rSize - 2])
+        pygame.draw.rect(screen, (255, 0, 0), [self.food.x * cSize, self.food.y * rSize, cSize - 2, rSize - 2])
 
     def update(self, events, dt):
         self.cooldown = self.cooldown - dt
@@ -113,22 +117,21 @@ class Game:
                 self.setfood()
 
     def setfood(self):
-        self.food = Vector2(random.randint(0, self.rows - 1), random.randint(2, self.colloms - 1))
+        self.food = Vector2(random.randint(2, self.colloms - 3), random.randint(2, self.rows - 3))
 
     def isdead(self, snake):
-        if(snake.pos.x < 0 or snake.pos.x > self.colloms-1) or (snake.pos.y < 2 or snake.pos.y > self.rows -1):
+        if(snake.pos.x < 2 or snake.pos.x > self.colloms-3) or (snake.pos.y < 2 or snake.pos.y > self.rows -3):
             return True
         if snake.length() > 1:
             return snake.skip(1).exist(lambda x: x.is_same(snake.pos))
         return False
 
     def teleport(self, snake):
-            if snake.pos.x == self.colloms:
-                snake.pos.x = 0
-            if snake.pos.x == -1:
-                snake.pos.x = self.colloms -1
-            if snake.pos.y == self.rows:
+            if snake.pos.x == self.colloms -2:
+                snake.pos.x = 2
+            if snake.pos.x == 1:
+                snake.pos.x = self.colloms -3
+            if snake.pos.y == self.rows -2:
                 snake.pos.y = 2
             if snake.pos.y == 1:
-                snake.pos.y = self.rows -1
-
+                snake.pos.y = self.rows -3
