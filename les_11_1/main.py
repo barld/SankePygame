@@ -1,6 +1,6 @@
 import pygame
 import sys
-from SnakeGameBarld import Game
+from SnakeGame import Game
 pygame.init()
 
 size = width, height = 480, 480
